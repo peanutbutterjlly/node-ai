@@ -29,7 +29,7 @@ async function newMessage(history, message) {
  * @return {Object} The formatted message object with the role and content properties.
  */
 function formatMessage(userInput) {
-  return {role: 'user', content: 'userInput'};
+  return {role: 'user', content: userInput};
 }
 
   /**
@@ -65,6 +65,9 @@ function chat() {
       start();
     });
   }
+
+  start();
+  console.log('\nAI🤖: How can I help you today?\n');
 }
 
 console.log("Chatbot initialized! Type 'exit' to end the chat.");
