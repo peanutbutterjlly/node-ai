@@ -1,0 +1,6 @@
+{
+    "rules": {
+        "no-unused-vars": "off",
+        "unused-imports/no-unused-imports": "off"
+    }
+}
