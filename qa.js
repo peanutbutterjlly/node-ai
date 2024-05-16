@@ -1,9 +1,9 @@
+import { OpenAIEmbeddings } from '@langchain/openai';
 import 'dotenv/config';
-import { MemoryVectorStore } from 'langchain/vectorstores/memory';
-import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
+import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
 import { YoutubeLoader } from 'langchain/document_loaders/web/youtube';
 import { CharacterTextSplitter } from 'langchain/text_splitter';
-import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
+import { MemoryVectorStore } from 'langchain/vectorstores/memory';
 import { openai } from './openai.js';
 
 const question = process.argv[2] || 'hi';
@@ -66,3 +66,34 @@ async function loadStore() {
 
   return createStore([...videoDocs, ...pdfDocs])
 }
+
+async function query() {
+  const store = await loadStore();
+  const results = await store.similaritySearch(question, 2);
+  const response = await openai.chat.completions.create({
+    model: 'gpt-3.5-turbo',
+    temperature: 0,
+    messages: [
+      {
+        role: 'system',
+        content: `You're a helpful AI assistant. Answer questions to the best of your ability.`,
+      },
+      {
+        role: 'user',
+        content: `Answer the following question using the provided context. 
+        If you can't answer the question with the context, don't lie and make up stuff. 
+        Just say you need more context.
+
+        Question: ${question}
+        
+        Context: ${results.map(r => r.pageContent).join('\n')}`,
+      },
+    ],
+  });
+
+  console.log(`Answer ${response.choices[0].message.content}\n\n
+  Sources: ${results.map(r => r.metadata.source).join(', ')}`)
+}
+
+
+query()
